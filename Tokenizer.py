@@ -76,6 +76,6 @@ def eval_tokenizer(tokenizer_path: str = None):
     print(f"Decoded: {decoded}")
     print(f"Special tokens preserved: {decoded == test_text}")
 
-
+#开始运行测试程序
 if __name__ == "__main__":
     eval_tokenizer()
