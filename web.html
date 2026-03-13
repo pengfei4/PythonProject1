@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer 学习笔记 - 可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 1.1em;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #00d9ff;
+            box-shadow: 0 15px 50px rgba(0,217,255,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0,217,255,0.3);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            margin-right: 20px;
+        }
+
+        .card-title {
+            font-size: 2em;
+            color: #00d9ff;
+            font-weight: bold;
+        }
+
+        .card-content {
+            line-height: 1.8;
+            font-size: 1.05em;
+            color: #ddd;
+        }
+
+        .card-content h3 {
+            color: #00ff88;
+            margin: 20px 0 10px 0;
+            font-size: 1.4em;
+        }
+
+        .card-content p {
+            margin-bottom: 15px;
+            color: #aaa;
+        }
+
+        .highlight {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .architecture-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #00d9ff;
+        }
+
+        .component {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .component:hover {
+            transform: translateX(5px);
+            border-color: #00ff88;
+            box-shadow: 0 5px 20px rgba(0,255,136,0.2);
+        }
+
+        .component-title {
+            font-weight: bold;
+            color: #00d9ff;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-box {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 5px 20px rgba(0,217,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .flow-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0,217,255,0.5);
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #00ff88;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .collapsible {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .collapsible.active {
+            max-height: 5000px;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+        }
+
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .layer {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 3px 15px rgba(0,217,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .layer:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 25px rgba(0,217,255,0.5);
+        }
+
+        .code-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            margin: 25px 0 0 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .code-header::before {
+            content: "💻";
+            font-size: 1.3em;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            overflow-x: auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .code-container pre {
+            margin: 0;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+        .function { color: #dcdcaa; }
+        .class-name { color: #4ec9b0; }
+        .number { color: #b5cea8; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Transformer 学习笔记</h1>
+        <p>Seq2Seq 模型可视化解析 - 理论与代码实现</p>
+    </div>
+
+    <div class="container">
+        <!-- Card 1: Seq2Seq 模型 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🔄</div>
+                <div class="card-title">1. Seq2Seq 模型</div>
+            </div>
+            <div class="card-content">
+                <p><span class="highlight">序列到序列（Sequence to Sequence）</span>，是典型的NLP任务</p>
+                
+                <button class="toggle-btn" onclick="toggleContent('seq2seq-content')">
+                    展开详情 ▼
+                </button>
+                
+                <div id="seq2seq-content" class="collapsible">
+                    <h3>📌 核心概念</h3>
+                    <p>Seq2Seq任务：对自然语言序列进行<span class="highlight">编码</span>再<span class="highlight">解码</span></p>
+                    
+                    <div class="flow-diagram">
+                        <div class="flow-box">输入序列</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">编码器</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">语义向量</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">解码器</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">输出序列</div>
+                    </div>
+
+                    <div class="architecture-box">
+                        <div class="component">
+                            <div class="component-title">🔵 编码（Encoding）</div>
+                            <p>将输入的自然语言序列通过隐藏层编码成能够表征语义的向量（或矩阵），可以简单理解为更复杂的词向量表示</p>
+                        </div>
+                        
+                        <div class="component">
+                            <div class="component-title">🔴 解码（Decoding）</div>
+                            <p>对输入的自然语言序列编码得到的向量或矩阵通过隐藏层输出，再解码成对应的自然语言目标序列</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: 核心组件 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">⚙️</div>
+                <div class="card-title">2. 核心组件</div>
+            </div>
+            <div class="card-content">
+                <p>Encoder 和 Decoder 内部的<span class="highlight">经典神经网络结构</span></p>
+                
+                <button class="toggle-btn" onclick="toggleContent('components-content')">
+                    展开详情 ▼
+                </button>
+                
+                <div id="components-content" class="collapsible">
+                    <div class="layer-stack">
+                        <div class="layer">🧠 前馈神经网络（FFN）</div>
+                        <div class="layer">📊 层归一化（Layer Norm）</div>
+                        <div class="layer">🔗 残差连接（Residual Connection）</div>
+                    </div>
+
+                    <div class="architecture-box">
+                        <div class="component">
+                            <div class="component-title">前馈神经网络（Feed Forward Neural Network）</div>
+                            <p><strong>定义：</strong>每一层的神经元都和上下两层的每一个神经元完全连接的网络结构</p>
+                            
+                            <div class="code-header">MLP 前馈神经网络实现</div>
+                            <div class="code-container">
+                                <pre><code><span class="keyword">class</span> <span class="class-name">MLP</span>(nn.Module):
+    <span class="comment">'''前馈神经网络'''</span>
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, dim: int, hidden_dim: int, dropout: float):
+        <span class="function">super</span>().__init__()
+        <span class="comment"># 定义第一层线性变换，从输入维度到隐藏维度</span>
+        self.w1 = nn.Linear(dim, hidden_dim, bias=<span class="keyword">False</span>)
+        <span class="comment"># 定义第二层线性变换，从隐藏维度到输入维度</span>
+        self.w2 = nn.Linear(hidden_dim, dim, bias=<span class="keyword">False</span>)
+        <span class="comment"># 定义dropout层，防止过拟合</span>
+        self.dropout = nn.Dropout(dropout)
+    
+    <span class="keyword">def</span> <span class="function">forward</span>(self, x):
+        <span class="comment"># 前向传播：输入x通过第一层线性变换和RELU激活函数</span>
+        <span class="comment"># 最后通过第二层线性变换和dropout层</span>
+        <span class="keyword">return</span> self.dropout(self.w2(F.relu(self.w1(x))))</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="component">
+                            <div class="component-title">层归一化（Layer Normalization）</div>
+                            <p><strong>定义：</strong>核心是为了让不同层输入的取值范围或者分布能够比较一致，深度神经网络中，往往需要归一化操作，将每一层的输入都归一化成标准正态分布</p>
+                            
+                            <div class="code-header">LayerNorm 层归一化实现</div>
+                            <div class="code-container">
+                                <pre><code><span class="keyword">class</span> <span class="class-name">LayerNorm</span>(nn.Module):
+    <span class="comment">'''Layer Norm层'''</span>
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, feature, eps=<span class="number">1e-6</span>):
+        <span class="function">super</span>().__init__()
+        <span class="comment"># 线性矩阵映射</span>
+        self.a_2 = nn.Parameter(torch.ones(feature))
+        self.b_2 = nn.Parameter(torch.zeros(feature))
+        self.eps = eps
+    
+    <span class="keyword">def</span> <span class="function">forward</span>(self, x):
+        <span class="comment"># 统计每个样本所有维度的值，求均值和方差</span>
+        mean = x.mean(<span class="number">-1</span>, keepdim=<span class="keyword">True</span>)  <span class="comment"># mean: [bsz, max_len, 1]</span>
+        std = x.std(<span class="number">-1</span>, keepdim=<span class="keyword">True</span>)    <span class="comment"># std: [bsz, max_len, 1]</span>
+        <span class="comment"># 注意，这里在最后一个维度发生了广播</span>
+        <span class="keyword">return</span> self.a_2 * (x - mean) / (std + self.eps) + self.b_2</code></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="component">
+                            <div class="component-title">残差连接（Residual Connection）</div>
+                            <p><strong>问题：</strong>由于 Transformer 模型结构较复杂、层数较深，为了避免模型退化，Transformer 采用了残差连接的思想来连接每一个子层</p>
+                            <p><strong>定义：</strong>下一层的输入不仅是上一层的输出，还包括上一层的输入</p>
+                            
+                            <div class="code-header">残差连接示例代码</div>
+                            <div class="code-container">
+                                <pre><code><span class="comment"># self.attention_norm 和 self.ffn_norm 都是 LayerNorm 层</span>
+<span class="comment"># self.attn 是注意力层</span>
+<span class="comment"># self.feed_forward 是前馈神经网络</span>
+
+<span class="comment"># 注意力计算（残差连接：x + attention输出）</span>
+h = x + self.attention.forward(self.attention_norm(x))
+
+<span class="comment"># 经过前馈神经网络（残差连接：h + ffn输出）</span>
+out = h + self.feed_forward.forward(self.ffn_norm(h))</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Encoder -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">📥</div>
+                <div class="card-title">3. Encoder（编码器）</div>
+            </div>
+            <div class="card-content">
+                <p>由 <span class="highlight">N 个 Encoder Layer</span> 组成的编码模块</p>
+                
+                <button class="toggle-btn" onclick="toggleContent('encoder-content')">
+                    展开详情 ▼
+                </button>
+                
+                <div id="encoder-content" class="collapsible">
+                    <h3>🏗️ 结构组成</h3>
+                    <p><strong>定义：</strong>Encoder 由 N 个 Encoder Layer 组成，每一个 Encoder Layer 包括一个注意力层和一个前馈神经网络</p>
+                    
+                    <div class="flow-diagram">
+                        <div class="flow-box">输入</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">注意力层</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">前馈神经网络</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">Layer Norm</div>
+                    </div>
+
+                    <div class="architecture-box">
+                        <h3 style="color: #00d9ff; margin-bottom: 15px;">Encoder Layer × N</h3>
+                        <div class="component">
+                            <div class="component-title">1️⃣ 注意力层（Attention Layer）</div>
+                            <p>计算输入序列中各个位置之间的关联性</p>
+                        </div>
+                        <div class="component">
+                            <div class="component-title">2️⃣ 前馈神经网络（FFN）</div>
+                            <p>对注意力层的输出进行非线性变换</p>
+                        </div>
+                        <div class="component">
+                            <div class="component-title">3️⃣ Layer Norm（最后）</div>
+                            <p>在最后加入一个 Layer Norm 实现规范化</p>
+                        </div>
+                        
+                        <div class="code-header">EncoderLayer 编码层实现</div>
+                        <div class="code-container">
+                            <pre><code><span class="keyword">class</span> <span class="class-name">EncoderLayer</span>(nn.Module):
+    <span class="comment">'''Encoder层'''</span>
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, args):
+        <span class="function">super</span>().__init__()
+        <span class="comment"># 一个layer中有两个layerNorm，分别在Attention之前和MLP之前</span>
+        self.attention_norm = LayerNorm(args.n_embd)
+        <span class="comment"># Encoder 不需要掩码，传入 is_causal=False</span>
+        self.attention = MultiHeadAttention(args, is_causal=<span class="keyword">False</span>)
+        self.ffn_norm = LayerNorm(args.n_embd)
+        self.feed_forward = MLP(args)
+    
+    <span class="keyword">def</span> <span class="function">forward</span>(self, x):
+        <span class="comment"># Layer Norm</span>
+        norm_x = self.attention_norm(x)
+        <span class="comment"># 自注意力（残差连接）</span>
+        h = x + self.attention.forward(norm_x, norm_x, norm_x)
+        <span class="comment"># 经过前馈神经网络（残差连接）</span>
+        out = h + self.feed_forward.forward(self.ffn_norm(h))
+        <span class="keyword">return</span> out</code></pre>
+                        </div>
+                        
+                        <div class="code-header">Encoder 编码器实现</div>
+                        <div class="code-container">
+                            <pre><code><span class="keyword">class</span> <span class="class-name">Encoder</span>(nn.Module):
+    <span class="comment">'''Encoder块'''</span>
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, args):
+        <span class="function">super</span>(Encoder, self).__init__()
+        <span class="comment"># 一个Encoder由N个Encoder Layer组成</span>
+        self.layers = nn.ModuleList([
+            EncoderLayer(args) <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="function">range</span>(args.n_layer)
+        ])
+        self.norm = LayerNorm(args.n_embd)
+    
+    <span class="keyword">def</span> <span class="function">forward</span>(self, x):
+        <span class="comment"># 分别通过N层Encoder Layer</span>
+        <span class="keyword">for</span> layer <span class="keyword">in</span> self.layers:
+            x = layer(x)
+        <span class="keyword">return</span> self.norm(x)</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Decoder -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">📤</div>
+                <div class="card-title">4. Decoder（解码器）</div>
+            </div>
+            <div class="card-content">
+                <p>由 <span class="highlight">N 个 Decoder Layer</span> 组成的解码模块</p>
+                
+                <button class="toggle-btn" onclick="toggleContent('decoder-content')">
+                    展开详情 ▼
+                </button>
+                
+                <div id="decoder-content" class="collapsible">
+                    <h3>🏗️ 结构组成</h3>
+                    <p><strong>解释：</strong>可以先搭建 Decoder Layer，再将 N 个 Decoder Layer 组装为 Decoder。Decoder 由两个注意力层和一个前馈神经网络组成</p>
+                    
+                    <div class="flow-diagram">
+                        <div class="flow-box">输入</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">掩码自注意力</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">多头注意力</div>
+                        <div class="arrow">→</div>
+                        <div class="flow-box">前馈神经网络</div>
+                    </div>
+
+                    <div class="architecture-box">
+                        <h3 style="color: #00d9ff; margin-bottom: 15px;">Decoder Layer × N</h3>
+                        
+                        <div class="component">
+                            <div class="component-title">1️⃣ 掩码自注意力层（Masked Self-Attention）</div>
+                            <p>使用 Mask 的注意力计算，保证每一个 token 只能使用该 token 之前的注意力分数</p>
+                            <p style="color: #ff6b6b; font-weight: bold;">⚠️ 防止"偷看"未来信息</p>
+                        </div>
+                        
+                        <div class="component">
+                            <div class="component-title">2️⃣ 多头注意力层（Multi-Head Attention）</div>
+                            <p>该层将使用第一个注意力层的输出作为 <strong>query</strong></p>
+                            <p>使用 Encoder 的输出作为 <strong>key</strong> 和 <strong>value</strong></p>
+                            <p>来计算注意力分数</p>
+                        </div>
+                        
+                        <div class="component">
+                            <div class="component-title">3️⃣ 前馈神经网络（FFN）</div>
+                            <p>最后经过前馈神经网络进行非线性变换</p>
+                        </div>
+""

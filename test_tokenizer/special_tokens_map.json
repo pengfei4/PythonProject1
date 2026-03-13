@@ -1,0 +1,18 @@
+{
+    "bos_token": {
+        "content": "<s>",
+        "single_word": false
+    },
+    "eos_token": {
+        "content": "</s>",
+        "single_word": false
+    },
+    "unk_token": {
+        "content": "<unk>",
+        "single_word": false
+    },
+    "pad_token": {
+        "content": "<unk>",
+        "single_word": false
+    }
+}

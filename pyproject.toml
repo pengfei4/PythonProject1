@@ -1,0 +1,12 @@
+[project]
+name = "pythonproject1"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "f>=0.0.1",
+    "hello-agents>=0.2.9",
+    "huggingface-hub>=1.4.1",
+    "matplotlib>=3.10.8",
+    "torch>=2.10.0",
+]
